@@ -8,9 +8,9 @@ GOON
     }
 
 START
-  = _ s:(STATEMENT _)* { return s.map(function(x) { return x[0] }); }
+  = _ s:(ROOT_STATEMENT _)* { return s.map(function(x) { return x[0] }); }
 
-STATEMENT
+ROOT_STATEMENT
   = "module" __ id:ID { return "module " + (module = id); }
   / "section" __ id:ID
     {
@@ -21,33 +21,44 @@ STATEMENT
     }
   / "on" __ context:("start" / "timeout" / ("hang" "up"? {return "hangup";} ) / "invalid") { return "switch context to " + context; }
   / "on" __ context:([0-9\*#]+) { return "switch context to " + context.join(''); }
-  / "noop" { return; }
-  / "label" __ label:ID { return "mark next instruction with label " + label }
-  / "goto" __ "module" __ module:ID section:(_ ":" _ id:ID {return id; })?
+  / STATEMENT
+
+STATEMENTS
+  = s:STATEMENT+ { return s; }
+
+STATEMENT
+  = "if" _ expr:EXPR __ "then" __ th:STATEMENTS _ "else" __ els:STATEMENTS _ "endif"
+    {
+      return "if (" + expr + ") then (" + th + ") else (" + els + ")";
+    }
+  / SIMPLE_STATEMENT
+
+SIMPLE_STATEMENT
+  = "noop" __ { return; }
+  / "label" __ label:ID __ { return "mark next instruction with label " + label }
+  / "goto" __ "module" __ module:ID section:(_ ":" _ id:ID {return id; })? __
     {
       return "goto module " + module + (section ? " section " + section : ' root');
     }
-  / "goto" __
-      section:ID? label:(_ ":" _ id:ID { return id; })?
+  / "goto" __ section:ID? label:(_ ":" _ id:ID { return id; })? __
     {
       return "goto " + (section ? "section " + section : "current section") +
         (label ? " on label " + label : "");
     }
-  / "gosub" __ "module" __ module:ID _ ":" _ section:ID
+  / "gosub" __ "module" __ module:ID _ ":" _ section:ID __
     {
       return "gosub module " + module + " section " + section;
     }
-  / "gosub" __
-      section:ID? label:(_ ":" _ id:ID { return id; })?
+  / "gosub" __ section:ID? label:(_ ":" _ id:ID { return id; })? __
     {
       return "gosub " + (section ? "section " + section : "current section") +
         (label ? " on label " + label : "");
     }
-  / "include" __ path:PATH { return "include file at " + path }
+  / "include" __ path:PATH __ { return "include file at " + path }
 
-  / "wait" __ TIME
+  / "wait" __ t:TIME __ { return "wait " + t + " seconds"; }
 
-  / ("say" __)? str:STRING { return "say: " + str; }
+  / ("say" __)? str:STRING __ { return "say(" + str + ")"; }
 
 
 /*
@@ -60,13 +71,18 @@ STATEMENT
   / "if" EXPRESSION "then" __ STATEMENT
 */
 
+
+EXPR "expression"
+  = "EXPR" { return "EXPR"; }
+
+
 /* whitespaces */
 
 __ = SPACE+ { return; }
 
 _ = SPACE* { return; }
 
-SPACE = (" " / "\n")
+SPACE = (" " / "\n" / "\t")
 
 TIME = sec:([0-9]+) ( _ "s" ("ec" ("ond" "s"? )? )? )? { return parseInt(sec.join('')); }
 

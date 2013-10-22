@@ -15,3 +15,18 @@ on 1
 on timeout
 include PATH
 wait 1s
+
+if EXPR then
+	if EXPR then
+		say '1'
+		say 'a 1'
+	else
+		say '2'
+	endif
+else
+	if EXPR then
+		say '3'
+	else
+		say '4'
+	endif
+endif
