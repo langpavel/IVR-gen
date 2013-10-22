@@ -4,7 +4,7 @@ on 123456789 goto module campaign200:start
 
 section start
   say 'test'
-    'a dalsi test'
+  say 'a dalsi test'
 
 section ROOT
   on 1234567890 goto ROOT
@@ -14,7 +14,11 @@ label abc
 on 1
 on timeout
 include PATH
-wait 1s
+wait 1 second
+
+if true then
+	noop
+endif
 
 if EXPR then
 	if EXPR then
@@ -23,6 +27,7 @@ if EXPR then
 	else
 		say '2'
 	endif
+	noop
 else
 	if EXPR then
 		say '3'

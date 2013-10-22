@@ -8,33 +8,36 @@ GOON
     }
 
 START
-  = _ s:(ROOT_STATEMENT _)* { return s.map(function(x) { return x[0] }); }
+  = s:ROOT_STATEMENT+ { return s.map(function(x) { return x; }); }
 
 ROOT_STATEMENT
-  = "module" __ id:ID { return "module " + (module = id); }
-  / "section" __ id:ID
+  = "module" __ id:ID __ { return "module " + (module = id); }
+  / "section" __ id:ID __
     {
       if (!module) {
         errors.push("section " + id + " is not in module context");
       }
       return "enter section " + id + " in " + module + " module";
     }
-  / "on" __ context:("start" / "timeout" / ("hang" "up"? {return "hangup";} ) / "invalid") { return "switch context to " + context; }
-  / "on" __ context:([0-9\*#]+) { return "switch context to " + context.join(''); }
+  / "on" __ context:("start" / "timeout" / ("hang" "up"? {return "hangup";} ) / "invalid") __ { return "switch context to " + context; }
+  / "on" __ context:([0-9\*#]+) __ { return "switch context to " + context.join(''); }
   / STATEMENT
 
-STATEMENTS
-  = s:STATEMENT+ { return s; }
-
 STATEMENT
-  = "if" _ expr:EXPR __ "then" __ th:STATEMENTS _ "else" __ els:STATEMENTS _ "endif"
+  = "if" __ expr:EXPR __
+    "then" __ th:STATEMENT+
+    els:("else" __ s:STATEMENT+ {return s; } )? "endif" __
     {
-      return "if (" + expr + ") then (" + th + ") else (" + els + ")";
+      return "if (" + expr + ") then (" + th.join(', ') + ")" + (els ? " else (" + els.join(', ') + ")" : '');
+    }
+  / "while" __ expr:EXPR __ "then" __ th:STATEMENT+ "end" __
+    {
+      return "while(" + expr + ") (" + th.join(', ') + ")";
     }
   / SIMPLE_STATEMENT
 
 SIMPLE_STATEMENT
-  = "noop" __ { return; }
+  = "noop" __ { return "Drink coffee"; }
   / "label" __ label:ID __ { return "mark next instruction with label " + label }
   / "goto" __ "module" __ module:ID section:(_ ":" _ id:ID {return id; })? __
     {
@@ -68,28 +71,27 @@ SIMPLE_STATEMENT
   / "say" _ (STRING _)+
   / "command" _ INTERPOLACED_STRING
   / "set"
-  / "if" EXPRESSION "then" __ STATEMENT
 */
 
 
-EXPR "expression"
-  = "EXPR" { return "EXPR"; }
+EXPR
+  = "EXPR" { return "(EXPR)"; }
+  / "true" { return true; }
+  / "false" { return false; }
 
+
+TIME = sec:([0-9]+) ( _ "s" ("ec" ("ond" "s"? )? )? )? { return parseInt(sec.join('')); }
+PATH = "PATH"
+ID = first:[a-zA-Z] next:[a-zA-Z0-9]* { next.unshift(first); return next.join(''); }
+/* String nebude mit auto concatenaci */
+STRING = "'" content:[^']* "'" { return content.join(''); }
 
 /* whitespaces */
 
-__ = SPACE+ { return; }
+__ "whitespace"
+  = SPACE+ { return ''; }
 
-_ = SPACE* { return; }
+_ "whitespace"
+  = SPACE* { return ''; }
 
-SPACE = (" " / "\n" / "\t")
-
-TIME = sec:([0-9]+) ( _ "s" ("ec" ("ond" "s"? )? )? )? { return parseInt(sec.join('')); }
-
-/* String nebude mit auto concatenaci */
-STRING = "'" content:[^']* "'" { return content.join(''); }
-/* TODO */
-
-PATH = "PATH"
-EXPR = "EXPR"
-ID = first:[a-zA-Z] next:[a-zA-Z0-9]* { next.unshift(first); return next.join(''); }
+SPACE = (" " / "\t" / "\n")
