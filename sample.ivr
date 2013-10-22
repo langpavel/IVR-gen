@@ -1,0 +1,55 @@
+#	KEYWORDS: module macro time seconds minutes miliseconds echo end say on if set 
+
+#	macro ID_MACRO \n? params (ID_PARAM CONVERSION_SPEC_OPT?,?)*
+#		STATEMENT_LIST
+#	end macro ID_MACRO?
+
+module campaign200 # ID - prefix for section
+
+#	on DTMF
+on 123456789 # root section
+	goto START
+
+# MACROS
+macro wait timeout is time in seconds
+	# internal parameters:
+	#	CURRENT_INPUT in when
+	command "exten => $CONTEXT,$PRIORITY,Wait($timeout)"
+end macro wait
+
+macro request url, timeout is time in seconds and integer default 5
+	command "exten => $CONTEXT,$PRIORITY,AGI(ivrRequest.agi,$url,--timeout $timeout)"
+end macro
+
+macro default_no_input implicit on timeout
+	on timeout
+		repeat 3 times
+			goto :start
+		then
+			say "Sorry, call will be terminated because of no input"
+			hangup
+		end repeat
+end macro
+
+# SECTIONS
+section START
+	on start # this is not needed, is implicit after "on"
+		say "this is example of ivr text"
+			"secon line
+			third line"
+
+		say file ./hlaska.txt
+
+		say sync "Neco neco neco"
+
+	on 1 # [0-9sith]
+		input 
+		wait 1s
+		wait 1
+		wait 100ms
+
+		goto LABEL
+
+	default_no_input
+
+section SECTION

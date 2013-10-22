@@ -1,0 +1,18 @@
+{
+  "name": "asterisk-ivr-gen",
+  "version": "0.0.1",
+  "description": "Generate asterisk IVR extension configuration file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "asterisk",
+    "IVR"
+  ],
+  "author": "Pavel Lang",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "pegjs": "~0.7.0"
+  }
+}

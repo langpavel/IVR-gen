@@ -1,0 +1,17 @@
+module campaign200
+
+on 123456789 goto module campaign200:start
+
+section start
+  say 'test'
+    'a dalsi test'
+
+section ROOT
+  on 1234567890 goto ROOT
+
+label abc
+
+on 1
+on timeout
+include PATH
+wait 1s
