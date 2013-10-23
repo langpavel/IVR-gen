@@ -1,6 +1,7 @@
 module campaign200
 
 on 123456789 goto module campaign200:start
+on 123456789 goto start
 
 section start
   say 'test'
@@ -12,7 +13,6 @@ section ROOT
 label abc
 
 on 1
-on timeout
 include PATH
 wait 1 second
 
@@ -29,9 +29,9 @@ if EXPR then
 	endif
 	noop
 else if EXPR then
-	say 'else if'
+	say 'saying else if.'
 elseif EXPR then
-	say 'else if'
+	say 'saying elseif.'
 elsif EXPR then
 	if EXPR then
 		say '3'
@@ -42,10 +42,11 @@ endif
 
 repeat 333 times
 	repeat 2 times
-		noop
+		say 'nejkulatoulinkatejsi'
 	end repeat
 end repeat
 
 while EXPR do
 
 end while
+on timeout

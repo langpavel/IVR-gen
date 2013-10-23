@@ -17,20 +17,32 @@ GOON
     }
 
 START
-  = s:ROOT_STATEMENT+ { return s.map(function(x) { return x; }); }
+  = s:ROOT_STATEMENT+ { return s; }
 
 ROOT_STATEMENT
-  = "module" __ id:ID __ { return "module " + (module = id); }
+  = "module" __ id:ID __
+    {
+      return "MODULE " + (module = id);
+    }
   / "section" __ id:ID __
     {
       if (!module) {
         errors.push( "section " + id + " is not in module context" );
       }
-      return "enter section " + id + " in " + module + " module";
+      return "ENTER SECTION " + id + " in " + module + " module";
     }
-  / "on" __ context:( "start" / "timeout" / ( "hang" "up"? {return "hangup";} ) / "invalid" ) __ { return "switch context to " + context; }
-  / "on" __ context:([0-9\*#]+) __ { return "switch context to " + context.join(''); }
-  / STATEMENT
+  / "on" __ context:( "start" / "timeout" / ( "hang" ( _ "up" )? {return "hangup";} ) / "invalid" ) __
+    {
+      return "SWITCH CONTEXT TO " + context;
+    }
+  / "on" __ context:([0-9\*#]+) __
+    {
+      return "SWITCH CONTEXT TO " + context.join('');
+    }
+  / s:STATEMENT+
+    {
+      return indent(s);
+    }
 
 STATEMENT
   = "if" __ expr:EXPR __

@@ -171,7 +171,7 @@ module.exports = (function(){
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, s) { return s.map(function(x) { return x; }); })(pos0, result0);
+          result0 = (function(offset, s) { return s; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -180,8 +180,8 @@ module.exports = (function(){
       }
       
       function parse_ROOT_STATEMENT() {
-        var result0, result1, result2, result3;
-        var pos0, pos1, pos2, pos3;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2, pos3, pos4;
         
         pos0 = pos;
         pos1 = pos;
@@ -219,7 +219,9 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, id) { return "module " + (module = id); })(pos0, result0[2]);
+          result0 = (function(offset, id) {
+              return "MODULE " + (module = id);
+            })(pos0, result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -265,7 +267,7 @@ module.exports = (function(){
                 if (!module) {
                   errors.push( "section " + id + " is not in module context" );
                 }
-                return "enter section " + id + " in " + module + " module";
+                return "ENTER SECTION " + id + " in " + module + " module";
               })(pos0, result0[2]);
           }
           if (result0 === null) {
@@ -318,14 +320,27 @@ module.exports = (function(){
                       }
                     }
                     if (result2 !== null) {
-                      if (input.substr(pos, 2) === "up") {
-                        result3 = "up";
-                        pos += 2;
+                      pos4 = pos;
+                      result3 = parse__();
+                      if (result3 !== null) {
+                        if (input.substr(pos, 2) === "up") {
+                          result4 = "up";
+                          pos += 2;
+                        } else {
+                          result4 = null;
+                          if (reportFailures === 0) {
+                            matchFailed("\"up\"");
+                          }
+                        }
+                        if (result4 !== null) {
+                          result3 = [result3, result4];
+                        } else {
+                          result3 = null;
+                          pos = pos4;
+                        }
                       } else {
                         result3 = null;
-                        if (reportFailures === 0) {
-                          matchFailed("\"up\"");
-                        }
+                        pos = pos4;
                       }
                       result3 = result3 !== null ? result3 : "";
                       if (result3 !== null) {
@@ -378,7 +393,9 @@ module.exports = (function(){
               pos = pos1;
             }
             if (result0 !== null) {
-              result0 = (function(offset, context) { return "switch context to " + context; })(pos0, result0[2]);
+              result0 = (function(offset, context) {
+                  return "SWITCH CONTEXT TO " + context;
+                })(pos0, result0[2]);
             }
             if (result0 === null) {
               pos = pos0;
@@ -445,13 +462,33 @@ module.exports = (function(){
                 pos = pos1;
               }
               if (result0 !== null) {
-                result0 = (function(offset, context) { return "switch context to " + context.join(''); })(pos0, result0[2]);
+                result0 = (function(offset, context) {
+                    return "SWITCH CONTEXT TO " + context.join('');
+                  })(pos0, result0[2]);
               }
               if (result0 === null) {
                 pos = pos0;
               }
               if (result0 === null) {
-                result0 = parse_STATEMENT();
+                pos0 = pos;
+                result1 = parse_STATEMENT();
+                if (result1 !== null) {
+                  result0 = [];
+                  while (result1 !== null) {
+                    result0.push(result1);
+                    result1 = parse_STATEMENT();
+                  }
+                } else {
+                  result0 = null;
+                }
+                if (result0 !== null) {
+                  result0 = (function(offset, s) {
+                      return indent(s);
+                    })(pos0, result0);
+                }
+                if (result0 === null) {
+                  pos = pos0;
+                }
               }
             }
           }
