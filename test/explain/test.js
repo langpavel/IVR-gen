@@ -3,7 +3,7 @@ var fs = require('fs');
 var parser = require(__dirname + '/../../build/ivr-explain');
 
 try {
-  var result = parser.parse(fs.readFileSync(__dirname + '/../../test.ivr', 'utf8'), 'GOON');
+  var result = parser.parse(fs.readFileSync(__dirname + '/../../test.ivr', 'utf8') + ' ', 'GOON');
 
   result.code.forEach(function(x) { console.log(x) });
 

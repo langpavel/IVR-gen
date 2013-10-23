@@ -26,13 +26,17 @@ ROOT_STATEMENT
 STATEMENT
   = "if" __ expr:EXPR __
     "then" __ th:STATEMENT+
-    els:("else" __ s:STATEMENT+ {return s; } )? "endif" __
+    els:("else" __ s:STATEMENT+ {return s; } )? "end" _ "if" __
     {
       return "if (" + expr + ") then (" + th.join(', ') + ")" + (els ? " else (" + els.join(', ') + ")" : '');
     }
   / "while" __ expr:EXPR __ "then" __ th:STATEMENT+ "end" __
     {
       return "while(" + expr + ") (" + th.join(', ') + ")";
+    }
+  / "repeat" __ times:CONST_INT ("times" __)? s:STATEMENT+ "end" _ "repeat" __
+    {
+      return "repeat " + times + "x (" + s.join(', ') + ")";
     }
   / SIMPLE_STATEMENT
 
@@ -64,6 +68,7 @@ SIMPLE_STATEMENT
   / ("say" __)? str:STRING __ { return "say(" + str + ")"; }
 
 
+
 /*
   / "macro" __ ID __ ARGUMENT_LIST STATEMENT_WITH_PREFIX+ "end" (__ "macro" (__ ID)?)?
   / "sub" __ ID __ STATEMENT+ "end" (__ "sub" (__ ID)?)?
@@ -73,6 +78,9 @@ SIMPLE_STATEMENT
   / "set"
 */
 
+
+CONST_INT "const_int"
+  = num:[0-9]+ __ { return parseInt(num.join(''), 10); }
 
 EXPR
   = "EXPR" { return "(EXPR)"; }
