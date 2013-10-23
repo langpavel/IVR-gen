@@ -5,7 +5,7 @@ GOON
       window.errors = [];
       window.indent = function(x) {
         if (Array.isArray(x))
-          x = '\n' + x.join('\n')
+          x = '\n' + x.join('\n');
         return x.replace(/\n/g, '\n  ') + '\n';
       };
       return true; }) code:START
@@ -54,21 +54,26 @@ STATEMENT
         (elsif.length ? elsif.reduce(function(x, elsif) {
           return x + ' else if (' + elsif[0] + ') then (' + indent(elsif[1]) + ')';
         }, '') : '') +
-        (els ? " else {" + els.join(', ') + "}" : '');
+        (els ? " else {" + indent(els) + "}" : '');
     }
   / "while" __ expr:EXPR __ ( "do" / "then" ) __ th:STATEMENT* "end" _ "while" __
     {
-      return "while (" + expr + ") do {" + th.join(', ') + "}";
+      return "while (" + expr + ") do {" + indent(th) + "}";
     }
   / "repeat" __ times:CONST_INT ( "times" __ )? s:STATEMENT* "end" _ "repeat" __
     {
       return "repeat " + times + "x {" + indent(s) + "}";
     }
+  / LABELED_STATEMENT
+
+
+LABELED_STATEMENT
+  = "label" __ label:ID __ s:SIMPLE_STATEMENT { return "label " + label + ": " + s; }
   / SIMPLE_STATEMENT
+
 
 SIMPLE_STATEMENT
   = "noop" __ { return "Drink coffee"; }
-  / "label" __ label:ID __ { return "mark next instruction with label " + label }
   / "goto" __ "module" __ module:ID section:(_ ":" _ id:ID {return id; })? __
     {
       return "goto module " + module + (section ? " section " + section : ' root');
@@ -116,7 +121,7 @@ EXPR
 
 TIME = sec:([0-9]+) ( _ "s" ( "ec" ( "ond" "s"? )? )? )? { return parseInt(sec.join('')); }
 PATH = "PATH"
-ID = first:[a-zA-Z] next:[a-zA-Z0-9]* { next.unshift(first); return next.join(''); }
+ID = first:[a-zA-Z_] next:[_a-zA-Z0-9]* { next.unshift(first); return next.join(''); }
 /* String nebude mit auto concatenaci */
 STRING = "'" content:[^']* "'" { return content.join(''); }
 

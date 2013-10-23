@@ -10,9 +10,9 @@ section start
 section ROOT
   on 1234567890 goto ROOT
 
-label abc
-
 on 1
+
+label start1
 include PATH
 wait 1 second
 
@@ -36,13 +36,14 @@ elsif EXPR then
 	if EXPR then
 		say '3'
 	else
+		label label_say_4
 		say '4'
 	end if
 endif
 
 repeat 333 times
 	repeat 2 times
-		say 'nejkulatoulinkatejsi'
+		say 'nejkulaťoulinkatější'
 	end repeat
 end repeat
 
