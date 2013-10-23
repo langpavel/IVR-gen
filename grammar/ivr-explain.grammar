@@ -39,6 +39,14 @@ ROOT_STATEMENT
     {
       return "SWITCH CONTEXT TO " + context.join('');
     }
+  / "macro" __ label:ID __ s:STATEMENT* "end" _ "macro" __
+    {
+      return "MACRO " + label + ":" + indent(s) + "END MACRO";
+    }
+  / "sub" __ label:ID __ s:STATEMENT* "end" _ "sub" __
+    {
+      return "SUB " + label + ":" + indent(s) + "RETURN";
+    }
   / s:STATEMENT+
     {
       return indent(s);
@@ -46,7 +54,7 @@ ROOT_STATEMENT
 
 STATEMENT
   = "if" __ expr:EXPR __
-    "then" __ th:STATEMENT*
+    ("then" __)? th:STATEMENT*
     elsif:(( "else" _ "if" / "elsif" ) __ e:EXPR __ "then" __ s:STATEMENT* {return [e,s]; } )*
     els:( "else" __ s:STATEMENT* {return s; } )? "end" _ "if" __
     {
@@ -94,11 +102,35 @@ SIMPLE_STATEMENT
     }
   / "include" __ path:PATH __ { return "include file at " + path }
 
-  / "wait" __ t:TIME __ { return "wait " + t + " seconds"; }
+  / "wait" __ t:TIME __
+    {
+      return "wait " + t + " seconds";
+    }
 
-  / ( "say" __ )? str:STRING __ { return "say " + JSON.stringify(str); }
+  / "record" __ path:( "into" __ path:FILE_EXPR __ { return path; } )?
+    {
+      return "start recording" + (path ? " into " + path : '');
+    }
 
+  / "input" (_ "into")? __ id:ID __
+    {
+      return "record input into " + id;
+    }
 
+  / "say" _ ":" _ words:[^\n]+ __
+    {
+      return "say " + JSON.stringify(words.join(''));
+    }
+
+  / "hang" ( _ "up" )? __
+    {
+      return "HANG UP!"
+    }
+
+  / ( "say" __ )? str:STRING __
+    {
+      return "say " + JSON.stringify(str);
+    }
 
 /*
   / "macro" __ ID __ ARGUMENT_LIST STATEMENT_WITH_PREFIX+ "end" (__ "macro" (__ ID)?)?
@@ -108,7 +140,6 @@ SIMPLE_STATEMENT
   / "command" _ INTERPOLACED_STRING
   / "set"
 */
-
 
 CONST_INT "const_int"
   = num:[0-9]+ __ { return parseInt(num.join(''), 10); }
@@ -120,8 +151,15 @@ EXPR
 
 
 TIME = sec:([0-9]+) ( _ "s" ( "ec" ( "ond" "s"? )? )? )? { return parseInt(sec.join('')); }
+
+FILE_EXPR
+  = "FILE_EXPR"
+  / PATH
+
 PATH = "PATH"
+
 ID = first:[a-zA-Z_] next:[_a-zA-Z0-9]* { next.unshift(first); return next.join(''); }
+
 /* String nebude mit auto concatenaci */
 STRING = "'" content:[^']* "'" { return content.join(''); }
 

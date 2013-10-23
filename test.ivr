@@ -1,11 +1,23 @@
 module campaign200
 
+macro REQUIRE_AUTH
+	if EXPR gosub AUTHENTICATE
+	end if
+end macro
+
+sub AUTHENTICATE
+	say: zadejte heslo
+	input ID
+end sub
+
 on 123456789 goto module campaign200:start
 on 123456789 goto start
 
 section start
   say 'test'
   say 'a dalsi test'
+  record
+  record into FILE_EXPR
 
 section ROOT
   on 1234567890 goto ROOT
@@ -51,3 +63,5 @@ while EXPR do
 
 end while
 on timeout
+	say: Sorry vole, měls něco vybrat
+	hangup
