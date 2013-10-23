@@ -1,5 +1,14 @@
 GOON
-  = (_ { window = global || window; window.module = null; window.errors = []; return true; }) code:START
+  = (_ {
+      window = global || window;
+      window.module = null;
+      window.errors = [];
+      window.indent = function(x) {
+        if (Array.isArray(x))
+          x = '\n' + x.join('\n')
+        return x.replace(/\n/g, '\n  ') + '\n';
+      };
+      return true; }) code:START
     {
       return {
         errors: errors,
@@ -15,28 +24,33 @@ ROOT_STATEMENT
   / "section" __ id:ID __
     {
       if (!module) {
-        errors.push("section " + id + " is not in module context");
+        errors.push( "section " + id + " is not in module context" );
       }
       return "enter section " + id + " in " + module + " module";
     }
-  / "on" __ context:("start" / "timeout" / ("hang" "up"? {return "hangup";} ) / "invalid") __ { return "switch context to " + context; }
+  / "on" __ context:( "start" / "timeout" / ( "hang" "up"? {return "hangup";} ) / "invalid" ) __ { return "switch context to " + context; }
   / "on" __ context:([0-9\*#]+) __ { return "switch context to " + context.join(''); }
   / STATEMENT
 
 STATEMENT
   = "if" __ expr:EXPR __
-    "then" __ th:STATEMENT+
-    els:("else" __ s:STATEMENT+ {return s; } )? "end" _ "if" __
+    "then" __ th:STATEMENT*
+    elsif:(( "else" _ "if" / "elsif" ) __ e:EXPR __ "then" __ s:STATEMENT* {return [e,s]; } )*
+    els:( "else" __ s:STATEMENT* {return s; } )? "end" _ "if" __
     {
-      return "if (" + expr + ") then (" + th.join(', ') + ")" + (els ? " else (" + els.join(', ') + ")" : '');
+      return "if (" + expr + ") then {" + indent(th) + "}" +
+        (elsif.length ? elsif.reduce(function(x, elsif) {
+          return x + ' else if (' + elsif[0] + ') then (' + indent(elsif[1]) + ')';
+        }, '') : '') +
+        (els ? " else {" + els.join(', ') + "}" : '');
     }
-  / "while" __ expr:EXPR __ "then" __ th:STATEMENT+ "end" __
+  / "while" __ expr:EXPR __ ( "do" / "then" ) __ th:STATEMENT* "end" _ "while" __
     {
-      return "while(" + expr + ") (" + th.join(', ') + ")";
+      return "while (" + expr + ") do {" + th.join(', ') + "}";
     }
-  / "repeat" __ times:CONST_INT ("times" __)? s:STATEMENT+ "end" _ "repeat" __
+  / "repeat" __ times:CONST_INT ( "times" __ )? s:STATEMENT* "end" _ "repeat" __
     {
-      return "repeat " + times + "x (" + s.join(', ') + ")";
+      return "repeat " + times + "x {" + indent(s) + "}";
     }
   / SIMPLE_STATEMENT
 
@@ -49,8 +63,8 @@ SIMPLE_STATEMENT
     }
   / "goto" __ section:ID? label:(_ ":" _ id:ID { return id; })? __
     {
-      return "goto " + (section ? "section " + section : "current section") +
-        (label ? " on label " + label : "");
+      return "goto " + (section ? "section " + section : "current section" ) +
+        (label ? " on label " + label : "" );
     }
   / "gosub" __ "module" __ module:ID _ ":" _ section:ID __
     {
@@ -58,14 +72,14 @@ SIMPLE_STATEMENT
     }
   / "gosub" __ section:ID? label:(_ ":" _ id:ID { return id; })? __
     {
-      return "gosub " + (section ? "section " + section : "current section") +
-        (label ? " on label " + label : "");
+      return "gosub " + (section ? "section " + section : "current section" ) +
+        (label ? " on label " + label : "" );
     }
   / "include" __ path:PATH __ { return "include file at " + path }
 
   / "wait" __ t:TIME __ { return "wait " + t + " seconds"; }
 
-  / ("say" __)? str:STRING __ { return "say(" + str + ")"; }
+  / ( "say" __ )? str:STRING __ { return "say " + JSON.stringify(str); }
 
 
 
@@ -83,12 +97,12 @@ CONST_INT "const_int"
   = num:[0-9]+ __ { return parseInt(num.join(''), 10); }
 
 EXPR
-  = "EXPR" { return "(EXPR)"; }
+  = "EXPR" { return "EXPR"; }
   / "true" { return true; }
   / "false" { return false; }
 
 
-TIME = sec:([0-9]+) ( _ "s" ("ec" ("ond" "s"? )? )? )? { return parseInt(sec.join('')); }
+TIME = sec:([0-9]+) ( _ "s" ( "ec" ( "ond" "s"? )? )? )? { return parseInt(sec.join('')); }
 PATH = "PATH"
 ID = first:[a-zA-Z] next:[a-zA-Z0-9]* { next.unshift(first); return next.join(''); }
 /* String nebude mit auto concatenaci */
@@ -102,4 +116,4 @@ __ "whitespace"
 _ "whitespace"
   = SPACE* { return ''; }
 
-SPACE = (" " / "\t" / "\n")
+SPACE = ( " " / "\t" / "\n" )

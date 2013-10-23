@@ -28,7 +28,11 @@ if EXPR then
 		say '2'
 	endif
 	noop
-else
+else if EXPR then
+	say 'else if'
+elseif EXPR then
+	say 'else if'
+elsif EXPR then
 	if EXPR then
 		say '3'
 	else
@@ -41,3 +45,7 @@ repeat 333 times
 		noop
 	end repeat
 end repeat
+
+while EXPR do
+
+end while
