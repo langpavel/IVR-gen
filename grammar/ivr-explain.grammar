@@ -3,6 +3,7 @@ GOON
       window = global || window;
       window.module = null;
       window.errors = [];
+      window.consts = {};
       window.indent = function(x) {
         if (Array.isArray(x))
           x = '\n' + x.join('\n');
@@ -49,7 +50,12 @@ ROOT_STATEMENT
     }
   / "const" __ id:ID _ "=" _ v:CONST_ADDITION
     {
-      return "define constant " + id + " = " + v;
+      if (typeof window.consts[id] !== 'undefined') {
+        errors.push("Refefined constant '" + id + "'");
+      } else {
+        consts[id] = v;
+        return "define constant " + id + " = " + v;
+      }
     }
   / s:STATEMENT+
     {
@@ -80,7 +86,7 @@ STATEMENT
     cases:( ( "case" / "when" ) __ e:EXPR
       ( __ "then" __ / _ ":" _ ) s:SIMPLE_STATEMENT* c:( "continue" / "break" ) __
       { return [e,s,c]; } )*
-    els:( "else" __ s:SIMPLE_STATEMENT+ { return s; } )?
+    els:( "else" ( _ ":" )? __ s:SIMPLE_STATEMENT+ { return s; } )?
     "end" _ "switch" __
     {
       return "switch (" + e1 + ")" +
@@ -218,8 +224,16 @@ CONST_UNARY
 CONST_PRIMARY
   = CONST_INT
   / STRING
-  / ID
-  / "(" CONST_ADDITION:CONST_ADDITION ")" { return CONST_ADDITION; }
+  / id:ID
+    {
+      if (typeof window.consts[id] !== 'undefined') {
+        return consts[id]
+      } else {
+        errors.push("Undefefined constant '" + id + "'");
+      }
+    }
+  / "(" CONST_ADDITION:CONST_ADDITION ")"
+    { return CONST_ADDITION; }
 
 
 CONST_INT "CONST_INT"

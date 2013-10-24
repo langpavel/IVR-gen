@@ -1,4 +1,5 @@
-const aaa = "a" + "b" + "c"
+const aaa = 7*3+5*2+"a" + "b" + "c"
+const bbb = aaa + " :-)"
 
 module campaign200
 
@@ -39,6 +40,8 @@ section start
 		case EXPR:
 			say: Break
 			break
+		else:
+			say "Nothing matters"
 	end switch
 
 	say 'test'
