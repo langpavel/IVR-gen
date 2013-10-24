@@ -130,7 +130,7 @@ SIMPLE_STATEMENT
       return "record input into " + id;
     }
 
-  / "AGI" __ p:PATH __
+  / "AGI" __ p:PATH _ args:ARG_CALL_LIST_OPT
     {
       return "call AGI script at '" + p + "'";
     }
@@ -164,13 +164,17 @@ SIMPLE_STATEMENT
   / "set"
 */
 
-CONST_INT "const_int"
-  = num:[0-9]+ __ { return parseInt(num.join(''), 10); }
+ARG_CALL_LIST_OPT
+  = "(" _  ")" _
+  / { return []; }
 
 EXPR
   = "EXPR" { return "EXPR"; }
   / "true" { return true; }
   / "false" { return false; }
+
+CONST_INT "const_int"
+  = num:[0-9]+ __ { return parseInt(num.join(''), 10); }
 
 
 TIME = sec:([0-9]+) ( _ "s" ( "ec" ( "ond" "s"? )? )? )? { return parseInt(sec.join('')); }
@@ -195,3 +199,4 @@ _ "whitespace"
   = SPACE* { return ''; }
 
 SPACE = ( " " / "\t" / "\n" )
+
