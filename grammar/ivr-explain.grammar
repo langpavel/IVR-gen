@@ -130,6 +130,16 @@ SIMPLE_STATEMENT
       return "record input into " + id;
     }
 
+  / "AGI" __ p:PATH __
+    {
+      return "call AGI script at '" + p + "'";
+    }
+
+  / "music" _ "on" _ "hold" ( __ "at" )? __ p:PATH __
+    {
+      return "MusicOnHold at '" + p + "'";
+    }
+
   / "say" _ ":" _ words:[^\n]+ __
     {
       return "say " + JSON.stringify(words.join(''));

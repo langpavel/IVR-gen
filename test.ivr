@@ -5,9 +5,21 @@ macro REQUIRE_AUTH
 	end if
 end macro
 
+macro request
+	AGI PATH
+end macro
+
 sub AUTHENTICATE
+	if EXPR then
+		say: zadejte cislo
+		input ID
+	endif
 	say: zadejte heslo
-	input ID
+	input into ID2
+end sub
+
+sub OPERATOR
+	music on hold at PATH
 end sub
 
 on 123456789 goto module campaign200:start
