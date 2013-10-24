@@ -78,8 +78,8 @@ elsif EXPR then
 	end if
 endif
 
-repeat 333 times
-	repeat 2 times
+repeat 3*3+1 times
+	repeat (5+5)*2/5-1 times
 		say 'nejkulaťoulinkatější'
 	end repeat
 end repeat

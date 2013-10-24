@@ -68,7 +68,7 @@ STATEMENT
     {
       return "while (" + expr + ") do {" + indent(th) + "}";
     }
-  / "repeat" __ times:CONST_INT ( "times" __ )? s:STATEMENT* "end" _ "repeat" __
+  / "repeat" __ times:CONST_ADDITION ( "times" __ )? s:STATEMENT* "end" _ "repeat" __
     {
       return "repeat " + times + "x {" + indent(s) + "}";
     }
@@ -173,8 +173,51 @@ EXPR
   / "true" { return true; }
   / "false" { return false; }
 
-CONST_INT "const_int"
-  = num:[0-9]+ __ { return parseInt(num.join(''), 10); }
+CONST_ADDITION
+  = left:CONST_MULT _ tail:([+-] CONST_MULT)* {
+      tail.forEach(function(value) {
+        // value[0] is sign
+        // value[1] is CONST_MULT rule result (our value)
+        left += (value[0] == '-') ? -value[1] : value[1];
+      });
+      return left;
+    }
+
+
+CONST_MULT
+  = left:CONST_UNARY _ tail:([*/%] CONST_UNARY)* {
+      tail.forEach(function(value) {
+        // value[0] is sign
+        // value[2] is CONST_MULT rule result (our value)
+        switch(value[0]) {
+          case "*":
+            left *= value[1];
+            break;
+          case "/":
+            left /= value[1];
+            break;
+          case "%":
+            left %= value[1];
+            break;
+        }
+      });
+      return left;
+    }
+
+
+CONST_UNARY
+  = sign:[+-]? _ val:CONST_PRIMARY _ {
+      return sign == '-' ? -val : val;
+    }
+
+
+CONST_PRIMARY
+  = CONST_INT
+  / "(" CONST_ADDITION:CONST_ADDITION ")" { return CONST_ADDITION; }
+
+
+CONST_INT "CONST_INT"
+  = digits:[0-9]+ { return parseInt(digits.join(""), 10); }
 
 
 TIME = sec:([0-9]+) ( _ "s" ( "ec" ( "ond" "s"? )? )? )? { return parseInt(sec.join('')); }
