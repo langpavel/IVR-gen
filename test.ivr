@@ -1,3 +1,5 @@
+const aaa = "a" + "b" + "c"
+
 module campaign200
 
 macro REQUIRE_AUTH

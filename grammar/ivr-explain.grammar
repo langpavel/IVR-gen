@@ -47,6 +47,10 @@ ROOT_STATEMENT
     {
       return "SUB " + label + ":" + indent(s) + "RETURN";
     }
+  / "const" __ id:ID _ "=" _ v:CONST_ADDITION
+    {
+      return "define constant " + id + " = " + v;
+    }
   / s:STATEMENT+
     {
       return indent(s);
@@ -213,6 +217,8 @@ CONST_UNARY
 
 CONST_PRIMARY
   = CONST_INT
+  / STRING
+  / ID
   / "(" CONST_ADDITION:CONST_ADDITION ")" { return CONST_ADDITION; }
 
 
@@ -231,7 +237,9 @@ PATH = "PATH"
 ID = first:[a-zA-Z_] next:[_a-zA-Z0-9]* { next.unshift(first); return next.join(''); }
 
 /* String nebude mit auto concatenaci */
-STRING = "'" content:[^']* "'" { return content.join(''); }
+STRING "STRING"
+  = "'" content:[^']* "'" { return content.join(''); }
+  / '"' content:[^"]* '"' { return content.join(''); }
 
 /* whitespaces */
 
