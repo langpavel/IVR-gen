@@ -14,13 +14,26 @@ on 123456789 goto module campaign200:start
 on 123456789 goto start
 
 section start
-  say 'test'
-  say 'a dalsi test'
-  record
-  record into FILE_EXPR
+
+	switch EXPR
+		case EXPR:
+			say: Continue
+			continue
+		case EXPR:
+			say: Ahoj
+			continue
+		case EXPR:
+			say: Break
+			break
+	end switch
+
+	say 'test'
+	say 'a dalsi test'
+	record
+	record into FILE_EXPR
 
 section ROOT
-  on 1234567890 goto ROOT
+	on 1234567890 goto ROOT
 
 on 1
 

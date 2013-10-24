@@ -64,13 +64,26 @@ STATEMENT
         }, '') : '') +
         (els ? " else {" + indent(els) + "}" : '');
     }
-  / "while" __ expr:EXPR __ ( "do" / "then" ) __ th:STATEMENT* "end" _ "while" __
+  / "while" __ expr:EXPR __ ( "do" __ / "then" __ )? th:STATEMENT* "end" _ "while" __
     {
       return "while (" + expr + ") do {" + indent(th) + "}";
     }
   / "repeat" __ times:CONST_INT ( "times" __ )? s:STATEMENT* "end" _ "repeat" __
     {
       return "repeat " + times + "x {" + indent(s) + "}";
+    }
+  / "switch" __ e1:EXPR __
+    cases:( ( "case" / "when" ) __ e:EXPR
+      ( __ "then" __ / _ ":" _ ) s:SIMPLE_STATEMENT* c:( "continue" / "break" ) __
+      { return [e,s,c]; } )*
+    els:( "else" __ s:SIMPLE_STATEMENT+ { return s; } )?
+    "end" _ "switch" __
+    {
+      return "switch (" + e1 + ")" +
+        indent(cases.map(function(x) {
+          return "case (" + x[0] + "):" + indent(x[1]) + '  ' + x[2];
+        })) +
+        "end switch";
     }
   / LABELED_STATEMENT
 
