@@ -4,7 +4,7 @@ all: build/ivr-explain.js
 clean:
 	$(RM) build/ivr-explain.js
 
-test:
+test: all
 	node ./test/explain/test.js
 
 build/ivr-explain.js: grammar/ivr-explain.grammar
